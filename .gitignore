@@ -1,0 +1,10 @@
+*.o
+*.d
+.*.swp
+*.gch
+/.cproject
+/.project
+*.pyc
+/dist/
+/*.egg-info
+

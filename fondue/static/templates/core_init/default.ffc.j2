@@ -1,0 +1,16 @@
+# Fondue core file for {{ name }}
+
+vlnv:
+    {% if vendor %}
+    vendor: {{ vendor }}
+    {% endif %}
+    name: {{ name }}
+    {% if library %}
+    library: {{ library }}
+    {% endif %}
+    {% if version %}
+    version: {{ version }}
+    {% endif %}
+files:
+    common:
+        {{ name }}.v
