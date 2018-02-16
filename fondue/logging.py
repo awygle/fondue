@@ -17,7 +17,8 @@ COLOR_MAP = {
     'WARNING': YELLOW,
     'INFO': WHITE,
     'DEBUG': WHITE,
-    }
+}
+
 
 class ColoredFormatter(logging.Formatter):
 
@@ -35,16 +36,19 @@ class ColoredFormatter(logging.Formatter):
             formatted = uncolored
         return formatted
 
+
 def setup_logging(level, monchrome=False):
     '''
     Utility function for setting up logging.
     '''
     # Logging to file
-    logging.basicConfig(filename='fusesoc.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='fusesoc.log',
+                        filemode='w', level=logging.DEBUG)
     # Pretty color terminal logging
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
-    formatter = ColoredFormatter("%(levelname)s: %(message)s", monochrome=monchrome)
+    formatter = ColoredFormatter(
+        "%(levelname)s: %(message)s", monochrome=monchrome)
     ch.setFormatter(formatter)
     # Which packages do we want to log from.
     packages = ('__main__', 'fondue',)
@@ -60,6 +64,7 @@ def setup_logging(level, monchrome=False):
         logger.setLevel(logging.WARNING)
     logger.debug('Setup logging at level {}.'.format(level))
 
+
 def init_logging(verbose, monochrome):
     level = logging.DEBUG if verbose else logging.INFO
 
@@ -74,4 +79,3 @@ def init_logging(verbose, monochrome):
         logger.debug("Monochrome output")
     else:
         logger.debug("Colorful output")
-
