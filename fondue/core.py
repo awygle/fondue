@@ -14,16 +14,14 @@ def init(args):
         directory = args.name
     
     try:
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
     except FileExistsError as e:
-        if e.errno == errno.EEXIST:
-            if os.path.isdir(directory):
-                if os.listdir(directory):
-                    logger.error("Failed to create directory '{}': directory exists and is not empty".format(directory))
-                    exit(1)
-            else:
-                logger.error("Failed to create directory '{}': {}".format(directory, e.strerror))
-                exit(1)
+        raise FileExistsError(e.errno, "Failed to create directory '{}': not a directory".format(directory))
+    except Exception as e:
+        raise type(e)("Failed to create directory '{}': {}".format(directory, e.args[0]))
+    
+    if os.listdir(directory):
+        raise FileExistsError(errno.EEXIST, "Failed to create directory '{}': directory exists and is not empty".format(directory))
     
     core_file_name = os.path.join(directory, args.name + '.ffc')
     render_template('core_init/default.ffc.j2', core_file_name, vars(args))

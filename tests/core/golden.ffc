@@ -1,0 +1,7 @@
+# Fondue core file for test_core
+
+vlnv:
+    name: test_core
+files:
+    common:
+        test_core.v

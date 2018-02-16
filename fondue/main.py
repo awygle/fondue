@@ -51,7 +51,11 @@ def main():
     init_logging(args.verbose, args.monochrome)
 
     # Run the function
-    args.func(args)
+    try:
+        args.func(args)
+    except Exception as e:
+        logger.error(e.reason)
+        exit(e.errno)
 
 if __name__ == "__main__":
     main()
