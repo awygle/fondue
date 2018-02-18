@@ -14,3 +14,7 @@ vlnv:
 files:
     common:
         {{ name }}.v
+    {% if sim_tool %}
+    {% include sim_tool+'.ffc.j2' ignore missing with context %}
+    {% endif %}
+

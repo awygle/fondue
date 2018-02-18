@@ -6,7 +6,7 @@ import yaml
 
 from fondue import __version__
 from fondue.logging import init_logging
-import fondue.core as core
+from fondue.core.init import run as core_init
 
 import logging
 
@@ -26,12 +26,12 @@ def parse_args():
         '--verbose',
         help='More info messages',
         action='store_true'
-        )
+    )
     parser.add_argument(
         '--monochrome',
         help='Don\'t use color for messages',
         action='store_true'
-        )
+    )
 
     # core operations
     parser_core = subparsers.add_parser(
@@ -47,10 +47,13 @@ def parse_args():
     parser_core_init.add_argument(
         '--version', help='The version of the core (used in VLNV)')
     parser_core_init.add_argument(
+        '--sim-tool', help='The sim tool template to use',
+        choices=['verilator'])
+    parser_core_init.add_argument(
         '--directory',
         help="The directory in which to create the core (defaults to 'name'"
-        )
-    parser_core_init.set_defaults(func=core.init)
+    )
+    parser_core_init.set_defaults(func=core_init)
 
     args = parser.parse_args()
 
@@ -73,8 +76,11 @@ def main():
     try:
         args.func(args)
     except Exception as e:
-        logger.error(e.reason)
-        exit(e.errno)
+        logger.debug(e)
+        try:
+            exit(e.errno)
+        except Exception:
+            exit(1)
 
 
 if __name__ == "__main__":

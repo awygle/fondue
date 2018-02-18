@@ -1,6 +1,6 @@
 # Fondue IP Management Tool
 
-A FuseSoC alternative (sorry Olaf!) for IP management.
+A FuseSoC alternative (sorry Olof!) for IP management.
 
 ## Current Version
 

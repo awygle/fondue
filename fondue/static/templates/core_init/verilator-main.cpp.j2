@@ -1,0 +1,11 @@
+#include "{{name}}.h"
+
+int main(int argc, char **argv) {
+	Verilated::commandArgs(argc, argv);
+	{{name}}_tb *tb = new {{name}}_tb();
+
+	while(!tb->done()) {
+		tb->tick();
+	} exit(EXIT_SUCCESS);
+}
+

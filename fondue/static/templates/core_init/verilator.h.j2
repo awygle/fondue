@@ -1,0 +1,36 @@
+class {{ name }}_tb {
+	unsigned long _tickcount;
+	V{{name}} *_core;
+
+	{{name}}_tb() {
+		_core = new V{{name}};
+		_tickcount = 0l;
+	}
+
+	virtual ~{{name}}_tb() {
+		delete _core;
+		_core = nullptr;
+	}
+
+	virtual void reset() {
+		_core->rst_i = 1;
+		this->tick();
+		_core->rst_i = 0;
+	}
+
+	virtual void tick() {
+		_tickcount++;
+
+		_core->clk_i = 0;
+		_core->eval();
+
+		_core->clk_i = 1;
+		_core->eval();
+
+		_core->clk_i = 0;
+		-core->eval();
+	}
+
+	virtual bool done() { return (Verilated::gotFinish()); }
+};
+
