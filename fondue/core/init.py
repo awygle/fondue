@@ -49,10 +49,7 @@ def _validate_directory(directory):
 
     if exists(directory):
         if not isdir(directory):
-            message = (
-                "Cannot create directory '{}': "
-                "not a directory"
-            ).format(directory)
+            message = f"Cannot create directory '{directory}': not a directory"
             logger.error(message)
             raise FileExistsError(
                 errno.EEXIST,
@@ -60,9 +57,9 @@ def _validate_directory(directory):
             )
         elif listdir(directory):
             message = (
-                "Cannot create directory '{}': "
+                f"Cannot create directory '{directory}': "
                 "directory exists and is not empty"
-            ).format(directory)
+            )
             logger.error(message)
             raise FileExistsError(
                 errno.EEXIST,
@@ -96,8 +93,10 @@ def _commit_directory(source, dest):
     try:
         distutils.dir_util.copy_tree(source, dest)
     except DistutilsFileError as e:
-        logger.error("Error committing to directory '{}' (race condition): {}"
-                     .format(dest, e.args[0]))
+        logger.error(
+            f"Error committing to directory '{directory}' "
+            f"(race condition): {e.args[0]}"
+        )
         raise
 
 
