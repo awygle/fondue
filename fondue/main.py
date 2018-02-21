@@ -4,13 +4,17 @@ import importlib
 import os
 import yaml
 
+import gather
+
 from fondue import __version__
 from fondue.logging import init_logging
-from fondue.core.init import run as core_init
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+topic_collector = gather.Collector()
 
 
 def parse_args():
@@ -23,7 +27,7 @@ def parse_args():
 
     # Global options
     parser.add_argument(
-        '--verbose',
+        '--verbose', '-v',
         help='More info messages',
         action='store_true'
     )
@@ -33,27 +37,9 @@ def parse_args():
         action='store_true'
     )
 
-    # core operations
-    parser_core = subparsers.add_parser(
-        'core', help='Work with Fondue core files')
-    core_subparsers = parser_core.add_subparsers()
-    parser_core_init = core_subparsers.add_parser(
-        'init', help='Create a new core file from a template')
-    parser_core_init.add_argument('name', help='The name of the core')
-    parser_core_init.add_argument(
-        '--vendor', help='The vendor of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--library', help='The library of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--version', help='The version of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--sim-tool', help='The sim tool template to use',
-        choices=['verilator'])
-    parser_core_init.add_argument(
-        '--directory',
-        help="The directory in which to create the core (defaults to 'name'"
-    )
-    parser_core_init.set_defaults(func=core_init)
+    for (topic, function) in topic_collector.collect().items():
+        logger.info(f"Adding arguments for topic '{topic}'")
+        function(subparsers)
 
     args = parser.parse_args()
 

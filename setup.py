@@ -8,9 +8,7 @@ def read(fname):
 
 setup(
     name="fondue",
-    packages=['fondue',
-              'fondue.tools',
-              'fondue.provider'],
+    packages=['fondue'],
     use_scm_version={
         "relative_to": __file__,
         "write_to": "fondue/version.py",
@@ -43,6 +41,9 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     entry_points={
+        'gather': [
+            "gather=fondue",
+        ],
         'console_scripts': [
             'fondue = fondue.main:main'
         ]
@@ -52,5 +53,6 @@ setup(
     ],
     install_requires=[
         'pyyaml',
+        'gather'
     ],
 )
