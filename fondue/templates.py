@@ -24,9 +24,11 @@ class TemplateRepo():
             lstrip_blocks=True,
             trim_blocks=True
         )
+        self._prefix = prefix
 
     def get_templates(self, key):
-        def filterfunc(x): return x.startswith(os.path.normpath(key)+'/')
+        def filterfunc(x):
+            return x.startswith(os.path.normpath(key)+'/') and x.endswith('j2')
 
         template_names = self._env.list_templates(filter_func=filterfunc)
         templates = {}

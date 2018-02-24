@@ -16,6 +16,7 @@ def test_empty_directory():
         args.directory = target_dir
         args.name = 'test_core'
         args.sim_tool = None
+        args.template = None
 
         fondue.core.init.run(args)
 
@@ -35,6 +36,7 @@ def test_nonempty_directory():
         args.directory = target_dir
         args.name = 'test_core'
         args.sim_tool = None
+        args.template = None
 
         try:
             fondue.core.init.run(args)
@@ -54,6 +56,7 @@ def test_file():
         args.directory = f.name
         args.name = 'test_core'
         args.sim_tool = None
+        args.template = None
 
         try:
             fondue.core.init.run(args)
@@ -70,6 +73,7 @@ def test_creation():
         args.directory = target_dir
         args.name = 'test_core'
         args.sim_tool = None
+        args.template = None
 
         fondue.core.init.run(args)
 
@@ -86,6 +90,7 @@ def test_golden():
         args.directory = target_dir
         args.name = 'test_core'
         args.sim_tool = None
+        args.template = None
 
         fondue.core.init.run(args)
 
@@ -110,6 +115,7 @@ def test_sim_tool():
         args.directory = target_dir
         args.name = 'test_core'
         args.sim_tool = 'verilator'
+        args.template = None
 
         fondue.core.init.run(args)
 
@@ -124,3 +130,23 @@ def test_sim_tool():
 
         assert os.path.exists(cpp_path) and not os.path.isdir(cpp_path)
         assert os.path.exists(header_path) and not os.path.isdir(header_path)
+
+
+def test_template():
+    with tempfile.TemporaryDirectory() as target_dir:
+        args = Namespace()
+        args.directory = target_dir
+        args.name = 'test_core'
+        args.sim_tool = None
+        args.template = 'wb4-slave'
+
+        fondue.core.init.run(args)
+
+        core_path = os.path.join(target_dir, "test_core.ffc")
+        verilog_path = os.path.join(target_dir, "test_core.v")
+
+        assert os.path.exists(core_path) and not os.path.isdir(core_path)
+        assert os.path.exists(verilog_path) and not os.path.isdir(verilog_path)
+
+        with open(verilog_path) as fgen:
+            assert 'wb_cyc_i' in fgen.read()

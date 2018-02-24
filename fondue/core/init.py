@@ -5,6 +5,7 @@ import shutil
 import collections
 import distutils.dir_util
 import copy
+import pkg_resources
 from os import listdir
 from os.path import exists, isdir
 from distutils.errors import DistutilsFileError
@@ -27,6 +28,14 @@ def add_arguments(subparsers):
         '--library', help='The library of the core (used in VLNV)')
     parser_core_init.add_argument(
         '--version', help='The version of the core (used in VLNV)')
+
+    templates = pkg_resources.resource_listdir('fondue',
+                                               'static/templates/core_init')
+    templates.remove('default')
+    parser_core_init.add_argument(
+        '--template', help='The top-level template to use',
+        choices=templates)
+
     parser_core_init.add_argument(
         '--sim-tool', help='The sim tool template to use',
         choices=['verilator'])
@@ -94,6 +103,14 @@ def _commit_directory(source, dest):
         raise
 
 
+def _update_templates(orig_templates, new_templates):
+    for (name, template) in new_templates.items():
+        if name in orig_templates:
+            base_template = orig_templates[name]
+            template.set_parent(base_template)
+        orig_templates[name] = template
+
+
 def _gather_templates(args):
     # default template
     template_repo = TemplateRepo('core_init/default')
@@ -101,13 +118,21 @@ def _gather_templates(args):
     # default tool
     templates = template_repo.get_templates('default')
 
+    # default sim templates
     if args.sim_tool:
         sim_templates = template_repo.get_templates(args.sim_tool)
-        for (name, template) in sim_templates.items():
-            if name in templates:
-                base_template = templates[name]
-                template.set_parent(base_template)
-            templates[name] = template
+        _update_templates(templates, sim_templates)
+
+    # top-level template
+    if args.template:
+        template_repo = TemplateRepo('core_init/' + args.template)
+        top_templates = template_repo.get_templates('default')
+        _update_templates(templates, top_templates)
+
+        # top-level sim templates
+        if args.sim_tool:
+            sim_templates = template_repo.get_templates(args.sim_tool)
+            _update_templates(templates, sim_templates)
 
     return templates
 
