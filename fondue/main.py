@@ -62,7 +62,7 @@ def main():
     try:
         args.func(args)
     except Exception as e:
-        logger.debug(e)
+        logger.exception("Unhandled exception")
         try:
             exit(e.errno)
         except Exception:

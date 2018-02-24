@@ -4,6 +4,7 @@ import logging
 import shutil
 import collections
 import distutils.dir_util
+import copy
 from os import listdir
 from os.path import exists, isdir
 from distutils.errors import DistutilsFileError
@@ -13,11 +14,6 @@ from fondue.templates import TemplateRepo
 from fondue.core import core_command_collector
 
 logger = logging.getLogger(__name__)
-
-
-init_template_repo = TemplateRepo('core_init')
-
-Template = collections.namedtuple('Template', 'template_name file_name')
 
 
 @core_command_collector.register()
@@ -67,23 +63,21 @@ def _validate_directory(directory):
             )
 
 
-def _build_templates(template_sources, core_name):
-    result = []
-    for source in template_sources:
-        for template_name in init_template_repo.get_templates(source):
-            # remove j2 suffix
-            file_name = os.path.splitext(os.path.basename(template_name))[0]
-            file_name = file_name.replace(source, core_name)
-            result.append(Template(template_name, file_name))
-    return result
-
-
 def _render_templates(templates, arguments, directory):
-    for template in templates:
-        init_template_repo.render_template(
-            template.template_name,
-            os.path.join(directory, template.file_name),
-            arguments
+    for (path, template) in templates.items():
+        args = copy.copy(arguments)
+        if template.parent:
+            base = template.parent
+        else:
+            base = None
+
+        file_name = os.path.splitext(path)[0]  # remove j2 suffix
+        file_name = file_name.replace('name', args.name)
+        template.repo.render_template(
+            template,
+            os.path.join(directory, file_name),
+            vars(args),
+            base=base
         )
 
 
@@ -100,6 +94,24 @@ def _commit_directory(source, dest):
         raise
 
 
+def _gather_templates(args):
+    # default template
+    template_repo = TemplateRepo('core_init/default')
+
+    # default tool
+    templates = template_repo.get_templates('default')
+
+    if args.sim_tool:
+        sim_templates = template_repo.get_templates(args.sim_tool)
+        for (name, template) in sim_templates.items():
+            if name in templates:
+                base_template = templates[name]
+                template.set_parent(base_template)
+            templates[name] = template
+
+    return templates
+
+
 def run(args):
     if args.directory:
         directory = os.path.expanduser(args.directory)
@@ -109,10 +121,8 @@ def run(args):
     _validate_directory(directory)
 
     with TemporaryDirectory() as tmpdir:
-        template_sources = [args.sim_tool, 'default']
-        template_sources = [x for x in template_sources if x is not None]
-        templates = _build_templates(template_sources, args.name)
+        templates = _gather_templates(args)
 
-        _render_templates(templates, vars(args), tmpdir)
+        _render_templates(templates, args, tmpdir)
 
         _commit_directory(tmpdir, directory)

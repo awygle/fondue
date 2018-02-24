@@ -12,9 +12,14 @@ vlnv:
     version: {{ version }}
     {% endif %}
 files:
+	{% block files %}
     common:
+		{% block common_files %}
         {{ name }}.v
+		{% endblock common_files %}
     {% if sim_tool %}
-    {% include sim_tool+'.ffc.j2' ignore missing with context %}
+    sim:
+		{% block sim_tool_files %}
+		{% endblock sim_tool_files %}
     {% endif %}
-
+	{% endblock files %}

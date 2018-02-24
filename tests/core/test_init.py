@@ -119,7 +119,7 @@ def test_sim_tool():
         assert os.path.exists(core_path) and not os.path.isdir(core_path)
         assert os.path.exists(verilog_path) and not os.path.isdir(verilog_path)
 
-        cpp_path = os.path.join(target_dir, "test_core-main.cpp")
+        cpp_path = os.path.join(target_dir, "verilator-main.cpp")
         header_path = os.path.join(target_dir, "test_core.h")
 
         assert os.path.exists(cpp_path) and not os.path.isdir(cpp_path)
