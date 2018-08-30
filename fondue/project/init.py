@@ -12,44 +12,39 @@ from distutils.errors import DistutilsFileError
 from tempfile import TemporaryDirectory
 
 from fondue.templates import TemplateRepo
-
 import click
 
 logger = logging.getLogger(__name__)
 
 
 def add_arguments(subparsers):
-    parser_core_init = subparsers.add_parser(
-        'init', help='Create a new core file from a template')
-    parser_core_init.add_argument('name', help='The name of the core')
-    parser_core_init.add_argument(
-        '--vendor', help='The vendor of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--library', help='The library of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--version', help='The version of the core (used in VLNV)')
+    parser_project_init = subparsers.add_parser(
+        'init', help='Create a new project file from a template')
+    parser_project_init.add_argument('name', help='The name of the project')
 
     templates = pkg_resources.resource_listdir('fondue',
-                                               'static/templates/core_init')
+                                               'static/templates/project_init')
     templates.remove('default')
-    parser_core_init.add_argument(
+    parser_project_init.add_argument(
         '--template', help='The top-level template to use',
         choices=templates)
 
-    parser_core_init.add_argument(
+    parser_project_init.add_argument(
         '--sim-tool', help='The sim tool template to use',
         choices=['verilator'])
-    parser_core_init.add_argument(
+    parser_project_init.add_argument(
         '--directory',
-        help="The directory in which to create the core (defaults to 'name'"
+        default=".",
+        help="The directory in which to create the project (defaults to the current directory)"
     )
-    parser_core_init.set_defaults(func=run)
+    parser_project_init.set_defaults(func=run)
 
 
-def _validate_directory(directory):
-    """Validate directory for new core.
+def _validate_directory(directory, name):
+    """Validate directory for new project.
 
-    Directory must not exist OR must exist, be a directory, and be empty.
+    Directory must not exist, or must exist, be a directory, and not contain a 
+    file name which conflicts with the project file to be created.
     """
 
     if exists(directory):
@@ -60,10 +55,10 @@ def _validate_directory(directory):
                 errno.EEXIST,
                 message
             )
-        elif listdir(directory):
+        elif name in listdir(directory):
             message = (
-                f"Cannot create directory '{directory}': "
-                "directory exists and is not empty"
+                f"Cannot create project file '{name}' in directory '{directory}': "
+                "directory already contains a file named '{name}'"
             )
             logger.error(message)
             raise FileExistsError(
@@ -90,19 +85,6 @@ def _render_templates(templates, arguments, directory):
         )
 
 
-def _commit_directory(source, dest):
-    _validate_directory(dest)
-
-    try:
-        distutils.dir_util.copy_tree(source, dest)
-    except DistutilsFileError as e:
-        logger.error(
-            f"Error committing to directory '{directory}' "
-            f"(race condition): {e.args[0]}"
-        )
-        raise
-
-
 def _update_templates(orig_templates, new_templates):
     for (name, template) in new_templates.items():
         if name in orig_templates:
@@ -113,7 +95,7 @@ def _update_templates(orig_templates, new_templates):
 
 def _gather_templates(args):
     # default template
-    template_repo = TemplateRepo('core_init/default')
+    template_repo = TemplateRepo('project_init/default')
 
     # default tool
     templates = template_repo.get_templates('default')
@@ -125,7 +107,7 @@ def _gather_templates(args):
 
     # top-level template
     if args.template:
-        template_repo = TemplateRepo('core_init/' + args.template)
+        template_repo = TemplateRepo('project_init/' + args.template)
         top_templates = template_repo.get_templates('default')
         _update_templates(templates, top_templates)
 
@@ -137,7 +119,7 @@ def _gather_templates(args):
     return templates
 
 
-@click.group('init', short_help='Initializes a core.')
+@click.group('init', short_help='Initializes a project')
 def run(args):
     if args.directory:
         directory = os.path.expanduser(args.directory)
@@ -146,9 +128,10 @@ def run(args):
 
     _validate_directory(directory)
 
-    with TemporaryDirectory() as tmpdir:
-        templates = _gather_templates(args)
+    templates = _gather_templates(args)
 
-        _render_templates(templates, args, tmpdir)
+    _render_templates(templates, args, directory)
 
-        _commit_directory(tmpdir, directory)
+@run.group('hmm')
+def more(args):
+    pass
