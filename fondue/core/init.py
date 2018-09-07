@@ -12,38 +12,10 @@ from distutils.errors import DistutilsFileError
 from tempfile import TemporaryDirectory
 
 from fondue.templates import TemplateRepo
-from fondue.core import core_command_collector
+
+import click
 
 logger = logging.getLogger(__name__)
-
-
-@core_command_collector.register()
-def add_arguments(subparsers):
-    parser_core_init = subparsers.add_parser(
-        'init', help='Create a new core file from a template')
-    parser_core_init.add_argument('name', help='The name of the core')
-    parser_core_init.add_argument(
-        '--vendor', help='The vendor of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--library', help='The library of the core (used in VLNV)')
-    parser_core_init.add_argument(
-        '--version', help='The version of the core (used in VLNV)')
-
-    templates = pkg_resources.resource_listdir('fondue',
-                                               'static/templates/core_init')
-    templates.remove('default')
-    parser_core_init.add_argument(
-        '--template', help='The top-level template to use',
-        choices=templates)
-
-    parser_core_init.add_argument(
-        '--sim-tool', help='The sim tool template to use',
-        choices=['verilator'])
-    parser_core_init.add_argument(
-        '--directory',
-        help="The directory in which to create the core (defaults to 'name'"
-    )
-    parser_core_init.set_defaults(func=run)
 
 
 def _validate_directory(directory):
@@ -81,11 +53,11 @@ def _render_templates(templates, arguments, directory):
             base = None
 
         file_name = os.path.splitext(path)[0]  # remove j2 suffix
-        file_name = file_name.replace('name', args.name)
+        file_name = file_name.replace('name', args['name'])
         template.repo.render_template(
             template,
             os.path.join(directory, file_name),
-            vars(args),
+            args,
             base=base
         )
 
@@ -119,29 +91,51 @@ def _gather_templates(args):
     templates = template_repo.get_templates('default')
 
     # default sim templates
-    if args.sim_tool:
-        sim_templates = template_repo.get_templates(args.sim_tool)
+    if args['sim_tool']:
+        sim_templates = template_repo.get_templates(args['sim_tool'])
         _update_templates(templates, sim_templates)
 
     # top-level template
-    if args.template:
-        template_repo = TemplateRepo('core_init/' + args.template)
+    if args['template']:
+        template_repo = TemplateRepo('core_init/' + args['template'])
         top_templates = template_repo.get_templates('default')
         _update_templates(templates, top_templates)
 
         # top-level sim templates
-        if args.sim_tool:
-            sim_templates = template_repo.get_templates(args.sim_tool)
+        if args['sim_tool']:
+            sim_templates = template_repo.get_templates(args['sim_tool'])
             _update_templates(templates, sim_templates)
 
     return templates
 
 
+@click.command('init',
+               options_metavar="[<options>]",
+               short_help='Initializes a core.')
+@click.argument("name", metavar="<name>")
+@click.option("--vendor", help="The vendor of the core (used in VLNV)")
+@click.option("--library", help="The library of the core (used in VLNV)")
+@click.option("--version", help="The version of the core (used in VLNV)")
+@click.option("--template", help="The top-level template to use")
+@click.option("--sim-tool", help="The sim tool template to use")
+@click.option("--directory",
+              help="The directory in which to create the core "
+              "(defaults to <name>)",
+              default=None, type=click.Path())
+def cmd(**kwargs):
+    run(kwargs)
+
+
 def run(args):
-    if args.directory:
-        directory = os.path.expanduser(args.directory)
+    """ This command initializes a new fondue core file.
+
+        The <name> argument is the name of the core to be created.
+    """
+    print(args)
+    if args['directory']:
+        directory = os.path.expanduser(args['directory'])
     else:
-        directory = args.name
+        directory = args['name']
 
     _validate_directory(directory)
 

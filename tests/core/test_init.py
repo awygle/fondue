@@ -7,16 +7,15 @@ import errno
 import os.path
 import shutil
 import logging
-from argparse import Namespace
 
 
 def test_empty_directory():
     with tempfile.TemporaryDirectory() as target_dir:
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = None
+        args = {}
+        args['name'] = 'test_core'
+        args['template'] = None
+        args['sim_tool'] = None
+        args['directory'] = target_dir
 
         fondue.core.init.run(args)
 
@@ -32,11 +31,11 @@ def test_nonempty_directory():
             name = f.name
             f.write("nope")
 
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = None
+        args = {}
+        args['directory'] = target_dir
+        args['name'] = 'test_core'
+        args['sim_tool'] = None
+        args['template'] = None
 
         try:
             fondue.core.init.run(args)
@@ -52,11 +51,11 @@ def test_file():
     with tempfile.NamedTemporaryFile(mode="w+") as f:
         f.write("nope")
 
-        args = Namespace()
-        args.directory = f.name
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = None
+        args = {}
+        args['directory'] = f.name
+        args['name'] = 'test_core'
+        args['sim_tool'] = None
+        args['template'] = None
 
         try:
             fondue.core.init.run(args)
@@ -69,11 +68,11 @@ def test_file():
 
 def test_creation():
     with tempfile.TemporaryDirectory() as target_dir:
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = None
+        args = {}
+        args['directory'] = target_dir
+        args['name'] = 'test_core'
+        args['sim_tool'] = None
+        args['template'] = None
 
         fondue.core.init.run(args)
 
@@ -86,11 +85,11 @@ def test_creation():
 
 def test_golden():
     with tempfile.TemporaryDirectory() as target_dir:
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = None
+        args = {}
+        args['directory'] = target_dir
+        args['name'] = 'test_core'
+        args['sim_tool'] = None
+        args['template'] = None
 
         fondue.core.init.run(args)
 
@@ -111,11 +110,11 @@ def test_golden():
 
 def test_sim_tool():
     with tempfile.TemporaryDirectory() as target_dir:
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = 'verilator'
-        args.template = None
+        args = {}
+        args['directory'] = target_dir
+        args['name'] = 'test_core'
+        args['sim_tool'] = 'verilator'
+        args['template'] = None
 
         fondue.core.init.run(args)
 
@@ -134,11 +133,11 @@ def test_sim_tool():
 
 def test_template():
     with tempfile.TemporaryDirectory() as target_dir:
-        args = Namespace()
-        args.directory = target_dir
-        args.name = 'test_core'
-        args.sim_tool = None
-        args.template = 'wb4-slave'
+        args = {}
+        args['directory'] = target_dir
+        args['name'] = 'test_core'
+        args['sim_tool'] = None
+        args['template'] = 'wb4-slave'
 
         fondue.core.init.run(args)
 

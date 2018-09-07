@@ -53,6 +53,6 @@ setup(
     ],
     install_requires=[
         'pyyaml',
-        'gather'
+        'click'
     ],
 )
